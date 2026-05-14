@@ -72,7 +72,7 @@ Caddy espone le porte 80 (redirect HTTP→HTTPS), 443 (HTTPS per Open WebUI) e 1
 - **OS:** Linux, Windows (tramite WSL2)
 - **Runtime:** Docker Engine, Docker Compose, NVIDIA Container Toolkit (Per il supporto alle GPU)
 - **GPU (Opzionale):** Una o piu' GPU Nvidia per il GPU offloading dei modelli
-  - Se una GPU nvidia non e' presente, è necessario disattivare l'accesso alla GPU nvidia a ollama nel docker-compose
+  - Se una GPU nvidia non è presente, è necessario disattivare l'accesso alla GPU nvidia su ollama nel docker-compose
 - **Hardware:** RAM + VRAM ≥ 16 GB, i modelli vengono automaticamente distribuiti tra RAM e VRAM
 - **Connessione:** Internet necessario solamente per il pull iniziale di immagini/pacchetti/modelli, successivamente funzionamento offline
 - **File:** `.env` compilato con parametri e credenziali DB
@@ -123,15 +123,15 @@ Caddy espone le porte 80 (redirect HTTP→HTTPS), 443 (HTTPS per Open WebUI) e 1
 ### 5. Verifica del funzionamento
 - **Isolamento di rete:**
   ```bash
-  curl -k https://localhost            # 200 OK (Caddy → OpenWebUI)
+  curl -k https://localhost            # Homepage, 200 OK (Caddy → OpenWebUI)
   curl http://localhost:5432           # Connection refused (Postgres interno)
-  curl -k https://localhost:11434      # 200 OK (Ollama via Caddy)
+  curl -k https://localhost:11434      # "Ollama is running", 200 OK (Ollama via Caddy)
   ```
 - **DB & RAG:**
   ```bash
   docker compose exec pgvector psql -U openwebui -d openwebui -c "\dt"
   ```
-  *Output atteso:* Elenco tabelle `ollama_embeddings`, `messages`, `documents`, ecc., validate da `pgvector``.
+  *Output atteso:* Elenco tabelle di Open WebUI: `access_grant`, `message`, `skill`, ecc., salvate dentro il DB `pgvector``.
 - **Test RAG:** Carica un file `.txt` nell'UI, selezionalo come contesto e invia una query basata sul contenuto.
 - **Persistenza:**
   ```bash
@@ -147,7 +147,7 @@ Si puo' eseguire lo script di teardown in scripts/teardown.sh:
    ```
 
 ## 7. Riflessioni e punti aperti
-- **Isolamento del proxy da internet:** Per massimizzare l'isolamento e' opportuno bloccare nel host tutto il traffico proveniente dalla rete portmapping_limited_internet_proxy e diretto verso nodi diversi dal computer host.
+- **Isolamento del proxy da internet:** Per massimizzare l'isolamento è opportuno bloccare nel host tutto il traffico proveniente dalla rete portmapping_limited_internet_proxy e diretto verso nodi diversi dal computer host.
 - **Costi di memoria:** L'uso di `q8_0` per il KV cache riduce l'impatto sulla VRAM.
   - La memoria disponibile rappresenta un collo di bottiglia per modelli più grandi o per carichi di lavoro RAG intensivi; in un ambiente di produzione sarebbe necessario utilizzare sistemi dotati di elevate risorse computazionali e di memoria.
   - Nuovi sistemi, come Google Turboquant, aiutano a ridurre l'impatto sulla memoria ulteriormente
@@ -167,3 +167,7 @@ Si puo' eseguire lo script di teardown in scripts/teardown.sh:
 * pgVector & PostgreSQL: https://github.com/pgvector/pgvector
 * Caddy Server: https://caddyserver.com/docs/
 * Materiali e slide del corso di Network Softwarization and Virtualization
+
+## 9. Licenza
+* Copyright 2026 Vito Collica (vito.collica@students.uniroma2.it)
+* I contenuti di questo repository sono distribuiti sotto licenza MIT, consulta il file [LICENSE](LICENSE) per i termini completi.

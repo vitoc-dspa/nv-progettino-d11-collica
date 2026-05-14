@@ -169,5 +169,5 @@ Si puo' eseguire lo script di teardown in scripts/teardown.sh:
 * Materiali e slide del corso di Network Softwarization and Virtualization
 
 ## 9. Licenza
-* Copyright 2026 Vito Collica (vito.collica@students.uniroma2.it)
+* Copyright 2026 Vito Collica (vito.collica@students.uniroma2.eu)
 * I contenuti di questo repository sono distribuiti sotto licenza MIT, consulta il file [LICENSE](LICENSE) per i termini completi.

@@ -1,0 +1,45 @@
+(private_only) {
+	@not_local {
+		not client_ip private_ranges
+	}
+	respond @not_local "Access Denied" 403
+}
+
+:80 {
+	redir https://{host}{uri} 301
+}
+
+:443 {
+	import private_only
+	encode gzip zstd
+	tls internal
+	header {
+		-Server
+		-X-Powered-By
+		+X-Frame-Options "SAMEORIGIN"
+		+X-Content-Type-Options "nosniff"
+		+X-XSS-Protection "1; mode=block"
+		+Referrer-Policy "strict-origin-when-cross-origin"
+	}
+	reverse_proxy openwebui:8080 {
+		header_up X-Real-IP {remote_host}
+		header_down +Strict-Transport-Security "max-age=31536000"
+	}
+}
+
+:11434 {
+	import private_only
+	tls internal
+	header {
+		-Server
+		-X-Powered-By
+		+X-Frame-Options "SAMEORIGIN"
+		+X-Content-Type-Options "nosniff"
+		+X-XSS-Protection "1; mode=block"
+		+Referrer-Policy "strict-origin-when-cross-origin"
+	}
+	reverse_proxy ollama:11434 {
+		header_up X-Real-IP {remote_host}
+		header_down +Strict-Transport-Security "max-age=31536000"
+	}
+}

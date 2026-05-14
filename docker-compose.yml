@@ -1,0 +1,142 @@
+services:
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: local_llm_openwebui
+    restart: unless-stopped
+    volumes:
+      - ./open_webui_mount:/app/backend/data
+    depends_on:
+      - ollama
+      - pgvector
+    environment:
+      - WEBUI_NAME=${WEBUI_NAME}
+      - ENABLE_SIGNUP=False
+      - WEBUI_ADMIN_EMAIL=${WEBUI_ADMIN_EMAIL}
+      - WEBUI_ADMIN_PASSWORD=${WEBUI_ADMIN_PASSWORD}
+      - DOCKER=True
+      - USE_CUDA=False
+      - ENABLE_OLLAMA_API=True
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - ENABLE_OPENAI_API=False
+      - WEBUI_SESSION_COOKIE_SAME_SITE=strict
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
+      - ENABLE_VERSION_UPDATE_CHECK=False
+      - CORS_ALLOW_ORIGIN=${ALLOWED_ORIGINS}
+      - VECTOR_DB=pgvector
+      - DATABASE_TYPE=postgresql
+      - DATABASE_USER=${PGVECTOR_USER:-openwebui}
+      - DATABASE_PASSWORD=${PGVECTOR_PASSWORD}
+      - DATABASE_HOST=pgvector
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=${PGVECTOR_DB:-openwebui}
+      #- ENABLE_USER_STATUS=False
+      #- ENABLE_TITLE_GENERATION=True
+      #- ENABLE_FOLLOW_UP_GENERATION=False
+      #- ENABLE_TAGS_GENERATION=True
+      #- OPENAI_API_BASE_URL=https://api.openai.com/v1
+      #- OPENAI_API_KEY=${OPENAI_API_KEY}
+      #- ENABLE_FORWARD_USER_INFO_HEADERS=False
+      #- ENABLE_OPENAI_API_PASSTHROUGH=False
+      #- ENABLE_EVALUATION_ARENA_MODELS=True
+      #- ENABLE_API_KEYS=False
+      #- ENABLE_RETRIEVAL_QUERY_GENERATION=True
+      #- ENABLE_QUERIES_CACHE=True
+      #- RAG_SYSTEM_CONTEXT=True
+      #- ENABLE_WEB_SEARCH=True
+      #- WEB_SEARCH_ENGINE=duckduckgo
+      #- DDGS_BACKEND=duckduckgo
+      #- BYPASS_WEB_SEARCH_EMBEDDING_AND_RETRIEVAL=True
+      #- WEB_LOADER_ENGINE=playwright
+      #- WHISPER_MODEL=base
+      #- WHISPER_COMPUTE_TYPE=int8
+      #- WHISPER_MODEL_AUTO_UPDATE=True
+      #- WHISPER_MULTILINGUAL=True
+      #- AUDIO_STT_ENGINE=
+      #- AUDIO_TTS_ENGINE=
+      #- ENABLE_IMAGE_GENERATION=False
+      ##- IMAGE_GENERATION_ENGINE=comfyui
+      ##- COMFYUI_BASE_URL=
+      ##- COMFYUI_API_KEY=
+      ##- COMFYUI_WORKFLOW=
+      ##- COMFYUI_WORKFLOW_NODES=
+      #- ENABLE_IMAGE_EDIT=False
+      ##- IMAGE_EDIT_ENGINE=comfyui
+      ##- IMAGES_EDIT_COMFYUI_BASE_URL=
+      ##- IMAGES_EDIT_COMFYUI_API_KEY=
+      ##- IMAGES_EDIT_COMFYUI_WORKFLOW=
+      ##- IMAGES_EDIT_COMFYUI_WORKFLOW_NODES=
+      #- USER_PERMISSIONS_CHAT_MULTIPLE_MODELS=False
+    networks:
+      - dbnet
+      - proxy
+      - internet_openwebui
+
+  pgvector:
+    image: pgvector/pgvector:pg18-trixie
+    container_name: local_llm_pgvector
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${PGVECTOR_DB:-openwebui}
+      POSTGRES_USER: ${PGVECTOR_USER:-openwebui}
+      POSTGRES_PASSWORD: ${PGVECTOR_PASSWORD}
+    volumes:
+      - ./pgvector_data_mount:/var/lib/postgresql
+    networks:
+      - dbnet
+
+  ollama:
+    image: ollama/ollama
+    container_name: local_llm_ollama
+    restart: unless-stopped
+    volumes:
+      - ./ollama_mount:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=-1
+      #- OLLAMA_NUM_PARALLEL=2 # Enable to allow running requests in parallel
+      - OLLAMA_FLASH_ATTENTION=1
+      - OLLAMA_KV_CACHE_TYPE=q8_0
+      - OLLAMA_NO_CLOUD=1
+      - OLLAMA_ORIGINS=${ALLOWED_ORIGINS}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - proxy
+      - internet_ollama
+
+  caddy:
+    image: caddy:2
+    container_name: local_llm_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+      - "11434:11434"
+    volumes:
+      - ./caddy_data_mount:/data
+      - ./caddy_config_mount:/config
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+    networks:
+      - proxy
+      - portmapping_limited_internet_proxy
+
+networks:
+  dbnet:
+    driver: bridge
+    internal: true
+  proxy:
+    driver: bridge
+    internal: true
+  internet_openwebui:
+    driver: bridge
+  internet_ollama:
+    driver: bridge
+  portmapping_limited_internet_proxy:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "false"

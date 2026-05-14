@@ -5,3 +5,4 @@ sudo rm -rf pgvector_data_mount
 sudo rm -rf ollama_mount
 sudo rm -rf caddy_data_mount
 sudo rm -rf caddy_config_mount
+sudo rm -rf certs_mount

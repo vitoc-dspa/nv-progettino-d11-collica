@@ -78,6 +78,12 @@ Caddy espone le porte 80 (redirect HTTP→HTTPS), 443 (HTTPS per Open WebUI) e 1
 - **File:** `.env` compilato con parametri e credenziali DB
 
 ## 4. Come riprodurre passo-passo
+
+**Nota:** Alternativamente agli step 3, 4, 5, si puo' eseguire lo script di setup in scripts/setup.sh:
+* ```bash
+   bash scripts/setup.sh
+   ```
+
 1. Clona il repository e entra nella directory:
    ```bash
    git clone https://github.com/vitoc-dspa/nv-progettino-d11-collica && cd nv-progettino-d11-collica
@@ -99,10 +105,10 @@ Caddy espone le porte 80 (redirect HTTP→HTTPS), 443 (HTTPS per Open WebUI) e 1
    ```
 5. Scarica un modello leggero per la demo (es. `qwen3.5:2b`):
    ```bash
-   curl -s http://localhost:11434/api/pull -d '{"name":"qwen3.5:2b"}'
+   sudo docker compose exec ollama ollama pull qwen3.5:2b
    ```
-6. Accedi all'interfaccia: `https://localhost`
-7. Effettua la prima registrazione, configura il system prompt di default nell'UI e avvia una conversazione.
+7. Accedi all'interfaccia: `https://localhost`
+8. Effettua la prima registrazione, configura il system prompt di default nell'UI e avvia una conversazione.
 
 ### 5. Verifica del funzionamento
 - **Isolamento di rete:**
@@ -124,7 +130,13 @@ Caddy espone le porte 80 (redirect HTTP→HTTPS), 443 (HTTPS per Open WebUI) e 1
   ```
   Verifica che chat, documenti e configurazione persistano nei bind mount.
 
-## 6. Riflessioni e punti aperti
+## 6. Teardown del sistema
+Si puo' eseguire lo script di teardown in scripts/teardown.sh:
+* ```bash
+   bash scripts/teardown.sh
+   ```
+
+## 7. Riflessioni e punti aperti
 - **Isolamento del proxy da internet:** Per massimizzare l'isolamento e' opportuno bloccare nel host tutto il traffico proveniente dalla rete portmapping_limited_internet_proxy e diretto verso nodi diversi dal computer host.
 - **Costi di memoria:** L'uso di `q8_0` per il KV cache riduce l'impatto sulla VRAM.
   - La memoria disponibile rappresenta un collo di bottiglia per modelli più grandi o per carichi di lavoro RAG intensivi; in un ambiente di produzione sarebbe necessario utilizzare sistemi dotati di elevate risorse computazionali e di memoria.
@@ -138,7 +150,7 @@ Caddy espone le porte 80 (redirect HTTP→HTTPS), 443 (HTTPS per Open WebUI) e 1
   - Integrare un WAF o un reverse proxy più avanzato (es. Nginx con moduli di sicurezza) per gestire firewall complessi e log di audit centralizzati.
 
 
-## 7. Riferimenti
+## 8. Riferimenti
 * Docker Compose: https://docs.docker.com/compose/
 * OpenWebUI: https://docs.openwebui.com/
 * Ollama & Local LLMs: https://ollama.com/

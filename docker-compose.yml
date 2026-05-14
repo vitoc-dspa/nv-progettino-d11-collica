@@ -120,6 +120,7 @@ services:
     volumes:
       - ./caddy_data_mount:/data
       - ./caddy_config_mount:/config
+      - ./certs_mount:/certs:ro
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
     networks:
       - proxy

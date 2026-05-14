@@ -3,5 +3,6 @@ pgvector_data_mount
 ollama_mount
 caddy_data_mount
 caddy_config_mount
+certs_mount
 .idea
 .env

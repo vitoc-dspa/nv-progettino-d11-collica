@@ -12,7 +12,8 @@
 :443 {
 	import private_only
 	encode gzip zstd
-	tls internal
+	tls /certs/cert.crt /certs/key.key
+
 	header {
 		-Server
 		-X-Powered-By
@@ -29,7 +30,7 @@
 
 :11434 {
 	import private_only
-	tls internal
+	tls /certs/cert.crt /certs/key.key
 	header {
 		-Server
 		-X-Powered-By

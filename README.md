@@ -79,7 +79,7 @@ Caddy espone le porte 80 (redirect HTTP→HTTPS), 443 (HTTPS per Open WebUI) e 1
 
 ## 4. Come riprodurre passo-passo
 
-**Nota:** Alternativamente agli step 3, 4, 5, si puo' eseguire lo script di setup in scripts/setup.sh:
+**Nota:** Alternativamente agli step 3, 4, 6, si puo' eseguire lo script di setup in scripts/setup.sh:
 * ```bash
    bash scripts/setup.sh
    ```
@@ -94,16 +94,26 @@ Caddy espone le porte 80 (redirect HTTP→HTTPS), 443 (HTTPS per Open WebUI) e 1
    # Compila le password e le altre variabili nel file .env
    EDITOR .env 
    ```
-3. Avvia lo stack:
+3. Crea certificati TLS self-signed per Caddy
+     ```bash
+     mkdir -p certs_mount
+     openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes \
+     -keyout certs_mount/key.key \
+     -out certs_mount/cert.crt \
+     -subj "/CN=localhost"
+     chmod 600 certs_mount/key.key
+     chmod 644 certs_mount/cert.crt
+     ````
+4. Avvia lo stack:
    ```bash
    docker compose up -d
    ```
    *Output atteso:* Creazione reti, download immagini, avvio container senza errori. I volumi sono bind mount per facilitare backup e debugging`.
-4. Attendi il completamento del boot (~30s) e verifica lo stato:
+5. Attendi il completamento del boot (~30s) e verifica lo stato:
    ```bash
    docker compose ps
    ```
-5. Scarica un modello leggero per la demo (es. `qwen3.5:2b`):
+6. Scarica un modello leggero per la demo (es. `qwen3.5:2b`):
    ```bash
    sudo docker compose exec ollama ollama pull qwen3.5:2b
    ```
